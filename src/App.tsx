@@ -29,15 +29,21 @@ function App() {
 
     const timeoutId = setTimeout(() => {
       setIsBoosting(false)
-    }, 8000)
+    }, 3000)
 
     return () => clearTimeout(timeoutId)
   }, [isBoosting])
 
-  const handleBoost = () => {
-    if (isBoosting) return
-    setIsBoosting(true)
-  }
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.key === 'k' || event.key === 'K') && !isBoosting) {
+        setIsBoosting(true)
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isBoosting])
 
   const basePercentage = Math.min(value / MAX_VALUE, 1) + 0.05
 
@@ -55,15 +61,21 @@ function App() {
 
   const angle = -90 + 180 * displayPercentage
 
+  const handleReset = () => {
+    setValue(0)
+    setIsBoosting(false)
+    setBoostTick(0)
+  }
+
   return (
     <div className="app">
       <h1 className="title">Wealth Meter</h1>
-      <div className="number-display">{value.toFixed(1)}</div>
+      <div className="number-display">{`$${value.toFixed(1)}`}</div>
 
       <div className="speedometer">
         <div className="speedometer-arc">
           <div className="speedometer-fill" />
-          <div className="speedometer-cover" />
+          <div className="speedometer-mask" />
           <div
             className="needle"
             style={{ transform: `rotate(${angle}deg)` }}
@@ -76,12 +88,8 @@ function App() {
         </div>
       </div>
 
-      <button
-        className="boost-button"
-        onClick={handleBoost}
-        disabled={isBoosting}
-      >
-        {isBoosting ? 'Boost in progress…' : 'Boost for 8 seconds'}
+      <button className="reset-button" onClick={handleReset}>
+        Reset
       </button>
 
       <p className="status-text">
