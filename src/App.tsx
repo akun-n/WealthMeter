@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import './App.css'
 
 const NORMAL_SPEED = 0.5
-const BOOST_SPEED = 4
+const BOOST_SPEED = 30
 const MAX_VALUE = 9000
 
 function App() {
   const [value, setValue] = useState(0)
+  const [isRunning, setIsRunning] = useState(false)
   const [isBoosting, setIsBoosting] = useState(false)
   const [boostTick, setBoostTick] = useState(0)
   const [coinBurstId, setCoinBurstId] = useState(0)
@@ -14,6 +15,8 @@ function App() {
   const currentSpeed = isBoosting ? BOOST_SPEED : NORMAL_SPEED
 
   useEffect(() => {
+    if (!isRunning) return
+
     const intervalId = setInterval(() => {
       setValue((prev) => {
         const next = prev + currentSpeed
@@ -23,7 +26,7 @@ function App() {
     }, 50)
 
     return () => clearInterval(intervalId)
-  }, [currentSpeed])
+  }, [currentSpeed, isRunning])
 
   useEffect(() => {
     if (!isBoosting) return
@@ -37,6 +40,17 @@ function App() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 's' || event.key === 'S') {
+        setIsRunning((running) => !running)
+      }
+
+      if (event.key === 'r' || event.key === 'R') {
+        setValue(0)
+        setIsBoosting(false)
+        setBoostTick(0)
+        setIsRunning(false)
+      }
+
       if (event.key === 'k' || event.key === 'K') {
         setCoinBurstId((id) => id + 1)
         if (!isBoosting) {
@@ -64,37 +78,27 @@ function App() {
   }
 
   const angle = -90 + 180 * displayPercentage
-
-  const handleReset = () => {
-    setValue(0)
-    setIsBoosting(false)
-    setBoostTick(0)
-  }
-
   return (
     <div className="app">
       <h1 className="title">Wealth Meter</h1>
-      <div className="number-display">{`$${value.toFixed(1)}`}</div>
-
-      <div className="speedometer">
-        <div className="speedometer-arc">
-          <div className="speedometer-fill" />
-          <div className="speedometer-mask" />
-          <div
-            className="needle"
-            style={{ transform: `rotate(${angle}deg)` }}
-          />
-        </div>
-        <div className="gauge-labels">
-          <span>Low</span>
-          <span>Medium</span>
-          <span>Max</span>
+      <div className="main-meter">
+        <div className="number-display">{`$${value.toFixed(1)}`}</div>
+        <div className="speedometer">
+          <div className="speedometer-arc">
+            <div className="speedometer-fill" />
+            <div className="speedometer-mask" />
+            <div
+              className="needle"
+              style={{ transform: `rotate(${angle}deg)` }}
+            />
+          </div>
+          <div className="gauge-labels">
+            <span>Low</span>
+            <span>Medium</span>
+            <span>Max</span>
+          </div>
         </div>
       </div>
-
-      <button className="reset-button" onClick={handleReset}>
-        Reset
-      </button>
 
       <p className="status-text">
         {isBoosting
