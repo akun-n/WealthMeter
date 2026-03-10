@@ -9,6 +9,7 @@ function App() {
   const [value, setValue] = useState(0)
   const [isBoosting, setIsBoosting] = useState(false)
   const [boostTick, setBoostTick] = useState(0)
+  const [coinBurstId, setCoinBurstId] = useState(0)
 
   const currentSpeed = isBoosting ? BOOST_SPEED : NORMAL_SPEED
 
@@ -36,8 +37,11 @@ function App() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.key === 'k' || event.key === 'K') && !isBoosting) {
-        setIsBoosting(true)
+      if (event.key === 'k' || event.key === 'K') {
+        setCoinBurstId((id) => id + 1)
+        if (!isBoosting) {
+          setIsBoosting(true)
+        }
       }
     }
 
@@ -97,6 +101,55 @@ function App() {
           ? 'Boost active: faster growth and near-full meter.'
           : 'Normal growth speed.'}
       </p>
+
+      {coinBurstId > 0 && <CoinBurst key={coinBurstId} />}
+    </div>
+  )
+}
+
+type CoinSide = 'top' | 'right' | 'bottom' | 'left'
+
+function CoinBurst() {
+  const coins = Array.from({ length: 40 }, (_, index) => {
+    const side: CoinSide = ['top', 'right', 'bottom', 'left'][index % 4] as CoinSide
+    const offset = Math.random() * 100
+    const delay = Math.random() * 0.8
+    const duration = 2 + Math.random() * 1.5
+    const size = 14 + Math.random() * 10
+
+    const style: React.CSSProperties = {
+      animationDuration: `${duration}s`,
+      animationDelay: `${delay}s`,
+      width: `${size}px`,
+      height: `${size}px`,
+    }
+
+    if (side === 'top') {
+      style.top = '-10%'
+      style.left = `${offset}%`
+    } else if (side === 'bottom') {
+      style.bottom = '-10%'
+      style.left = `${offset}%`
+    } else if (side === 'left') {
+      style.left = '-10%'
+      style.top = `${offset}%`
+    } else {
+      style.right = '-10%'
+      style.top = `${offset}%`
+    }
+
+    return { side, style, key: `${side}-${index}` }
+  })
+
+  return (
+    <div className="coin-layer">
+      {coins.map((coin) => (
+        <div
+          key={coin.key}
+          className={`coin coin--${coin.side}`}
+          style={coin.style}
+        />
+      ))}
     </div>
   )
 }
