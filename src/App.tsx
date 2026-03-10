@@ -8,6 +8,7 @@ const MAX_VALUE = 9000
 function App() {
   const [value, setValue] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
+  const [isDecaying, setIsDecaying] = useState(false)
   const [isBoosting, setIsBoosting] = useState(false)
   const [boostTick, setBoostTick] = useState(0)
   const [coinBurstId, setCoinBurstId] = useState(0)
@@ -19,14 +20,17 @@ function App() {
 
     const intervalId = setInterval(() => {
       setValue((prev) => {
-        const next = prev + currentSpeed
-        return next > MAX_VALUE ? MAX_VALUE : next
+        const delta = isDecaying ? -currentSpeed : currentSpeed
+        const next = prev + delta
+        if (next > MAX_VALUE) return MAX_VALUE
+        if (next < 0) return 0
+        return next
       })
       setBoostTick((t) => t + 1)
     }, 50)
 
     return () => clearInterval(intervalId)
-  }, [currentSpeed, isRunning])
+  }, [currentSpeed, isRunning, isDecaying])
 
   useEffect(() => {
     if (!isBoosting) return
@@ -44,14 +48,19 @@ function App() {
         setIsRunning((running) => !running)
       }
 
+      if (event.key === 'd' || event.key === 'D') {
+        setIsDecaying((decaying) => !decaying)
+      }
+
       if (event.key === 'r' || event.key === 'R') {
         setValue(0)
         setIsBoosting(false)
         setBoostTick(0)
         setIsRunning(false)
+        setIsDecaying(false)
       }
 
-      if (event.key === 'k' || event.key === 'K') {
+      if (event.key === 'b' || event.key === 'B') {
         setCoinBurstId((id) => id + 1)
         if (!isBoosting) {
           setIsBoosting(true)
